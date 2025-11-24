@@ -1,0 +1,133 @@
+[
+  {
+    "id": 1,
+    "name": "Organic Apples",
+    "category": "fruits",
+    "price": 4.99,
+    "image": "/local-farm-fresh-apples.jpg",
+    "rating": 4.8
+  },
+  {
+    "id": 2,
+    "name": "Bananas",
+    "category": "fruits",
+    "price": 2.99,
+    "image": "/fresh-bananas.jpg",
+    "rating": 4.6
+  },
+  {
+    "id": 3,
+    "name": "Strawberries",
+    "category": "fruits",
+    "price": 5.99,
+    "image": "/organic-strawberries.jpg",
+    "rating": 4.9
+  },
+  {
+    "id": 4,
+    "name": "Blueberries",
+    "category": "fruits",
+    "price": 6.99,
+    "image": "/fresh-blueberries.jpg",
+    "rating": 4.7
+  },
+  {
+    "id": 5,
+    "name": "Oranges",
+    "category": "fruits",
+    "price": 3.99,
+    "image": "/organic-oranges.jpg",
+    "rating": 4.5
+  },
+
+  {
+    "id": 6,
+    "name": "Organic Carrots",
+    "category": "vegetables",
+    "price": 2.49,
+    "image": "/sweet-organic-carrots.jpg",
+    "rating": 4.7
+  },
+  {
+    "id": 7,
+    "name": "Spinach Mix",
+    "category": "vegetables",
+    "price": 3.49,
+    "image": "/fresh-spinach-kale-mix.jpg",
+    "rating": 4.8
+  },
+  {
+    "id": 8,
+    "name": "Tomatoes",
+    "category": "vegetables",
+    "price": 3.99,
+    "image": "/organic-heirloom-tomatoes.jpg",
+    "rating": 4.6
+  },
+  {
+    "id": 9,
+    "name": "Broccoli",
+    "category": "vegetables",
+    "price": 2.99,
+    "image": "/fresh-broccoli.jpg",
+    "rating": 4.5
+  },
+  {
+    "id": 10,
+    "name": "Bell Peppers",
+    "category": "vegetables",
+    "price": 3.49,
+    "image": "/organic-bell-peppers.jpg",
+    "rating": 4.7
+  },
+
+  {
+    "id": 11,
+    "name": "Organic Milk",
+    "category": "dairy",
+    "price": 4.99,
+    "image": "/organic-milk.jpg",
+    "rating": 4.6
+  },
+  {
+    "id": 12,
+    "name": "Greek Yogurt",
+    "category": "dairy",
+    "price": 5.49,
+    "image": "/greek-yogurt.jpg",
+    "rating": 4.8
+  },
+  {
+    "id": 13,
+    "name": "Cheddar Cheese",
+    "category": "dairy",
+    "price": 7.99,
+    "image": "/cheddar-cheese.jpg",
+    "rating": 4.7
+  },
+
+  {
+    "id": 14,
+    "name": "Brown Rice",
+    "category": "grains",
+    "price": 3.99,
+    "image": "/organic-brown-rice.jpg",
+    "rating": 4.5
+  },
+  {
+    "id": 15,
+    "name": "Whole Wheat Bread",
+    "category": "grains",
+    "price": 4.49,
+    "image": "/whole-wheat-bread.jpg",
+    "rating": 4.6
+  },
+  {
+    "id": 16,
+    "name": "Oats",
+    "category": "grains",
+    "price": 5.99,
+    "image": "/organic-oats.jpg",
+    "rating": 4.8
+  }
+]
