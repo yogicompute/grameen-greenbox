@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
@@ -36,7 +37,9 @@ export default function RootLayout({
               Sale ends in: {50} days, {10} hours, {26} minutes
             </span>
           </div>
-          <Navbar />
+          <Suspense fallback={null}>
+            <Navbar />
+          </Suspense>
           <div className="border-t border-gray-200" />
           {children}
           <Footer />
