@@ -5,10 +5,20 @@ import MaxWidthContainer from "../MaxWidthContainer";
 import ALL_PRODUCTS from "@/lib/products.json";
 import { supabase } from "@/lib/supabase";
 import { Button } from "./button";
-import { Menu, X, LogOut, ShoppingCartIcon, HeartIcon } from "lucide-react";
+import {
+  Menu,
+  X,
+  LogOut,
+  ShoppingCartIcon,
+  HeartIcon,
+  UserCircle2,
+  MoreVertical,
+  ChevronDown,
+} from "lucide-react";
 import { AuthModal } from "../modals/auth-modal";
 import { LocationDropdown } from "../location-dropdown";
 import AddressModal from "../modals/address-modal";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface Props {}
 
@@ -18,6 +28,9 @@ const Navbar: React.FC<Props> = ({}) => {
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Auth
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -33,6 +46,10 @@ const Navbar: React.FC<Props> = ({}) => {
   const [addressDraft, setAddressDraft] = useState<Partial<any> | null>(null);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [reopenAddressAfterAuth, setReopenAddressAfterAuth] = useState(false);
+  const [cartCount, setCartCount] = useState<number>(0);
+  const [wishlistCount, setWishlistCount] = useState<number>(0);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   // simple normalized matcher
   const normalizedQuery = query.trim().toLowerCase();
@@ -49,6 +66,9 @@ const Navbar: React.FC<Props> = ({}) => {
   useEffect(() => {
     setActiveIndex(-1);
 
+    const current = searchParams?.get("search") ?? "";
+    setQuery(current);
+
     const getUser = async () => {
       try {
         const {
@@ -56,7 +76,6 @@ const Navbar: React.FC<Props> = ({}) => {
         } = await supabase.auth.getUser();
 
         if (supaUser) {
-          // read display_name from user metadata (fall back to email prefix)
           const meta = (supaUser.user_metadata ?? {}) as any;
           const displayName =
             meta?.display_name ||
@@ -64,16 +83,26 @@ const Navbar: React.FC<Props> = ({}) => {
             (supaUser.email ? supaUser.email.split("@")[0] : undefined);
 
           setUser({ email: supaUser.email || "", displayName });
-          // fetch addresses for this user
+
           fetchAddresses(supaUser.id).catch((e) =>
             console.error("Failed to fetch addresses:", e)
           );
+          fetchCartCount(supaUser.id).catch((e: any) =>
+            console.error("Failed to fetch cart count:", e)
+          );
+          fetchWishlistCount(supaUser.id).catch((e: any) =>
+            console.error("Failed to fetch wishlist count:", e)
+          );
         } else {
           setUser(null);
+          setCartCount(0);
+          setWishlistCount(0);
         }
       } catch (error) {
         console.error("[v0] Failed to fetch user:", error);
         setUser(null);
+        setCartCount(0);
+        setWishlistCount(0);
       } finally {
         setIsLoadingUser(false);
       }
@@ -81,7 +110,6 @@ const Navbar: React.FC<Props> = ({}) => {
 
     getUser();
 
-    // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -96,15 +124,24 @@ const Navbar: React.FC<Props> = ({}) => {
         fetchAddresses(session.user.id).catch((e) =>
           console.error("Failed to fetch addresses:", e)
         );
+        fetchCartCount(session.user.id).catch((e: any) => {
+          console.error("Failed to fetch cart count:", e);
+        });
+        fetchWishlistCount(session.user.id).catch((e: any) => {
+          console.error("Failed to fetch wishlist count:", e);
+        });
       } else {
         setUser(null);
         setAddresses([]);
+        setCartCount(0);
+        setWishlistCount(0);
       }
     });
+
     return () => {
       subscription?.unsubscribe();
     };
-  }, [results.length, supabase]);
+  }, [searchParams]);
 
   // fetch addresses helper
   const fetchAddresses = async (userId?: string | null) => {
@@ -137,6 +174,8 @@ const Navbar: React.FC<Props> = ({}) => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       setUser(null);
+      setCartCount(0);
+      setWishlistCount(0);
       setIsMobileMenuOpen(false);
     } catch (error) {
       console.error("[v0] Failed to sign out:", error);
@@ -163,16 +202,25 @@ const Navbar: React.FC<Props> = ({}) => {
       e.preventDefault();
       setActiveIndex((i) => Math.max(-1, i - 1));
     } else if (e.key === "Enter") {
-      // on submit via Enter — always show shop results page (per request)
       e.preventDefault();
       const q = query.trim();
-      const target = q ? `/shop?search=${encodeURIComponent(q)}` : `/shop`;
-      window.location.href = target;
+
+      const params = new URLSearchParams(
+        searchParams ? Array.from(searchParams.entries()) : []
+      );
+
+      if (q) {
+        params.set("search", q);
+      } else {
+        params.delete("search");
+      }
+
+      const target =
+        params.toString().length > 0 ? `/shop?${params.toString()}` : `/shop`;
+
+      router.push(target);
     }
   }
-
-  const wishlistCount = 0;
-  const cartCount = 0;
 
   function highlight(text: string) {
     if (!normalizedQuery) return text;
@@ -204,18 +252,65 @@ const Navbar: React.FC<Props> = ({}) => {
     ? formatFirstName(user.displayName ?? user.email ?? "")
     : "";
 
+  // fetch cart count helper
+  const fetchCartCount = async (userId?: string | null) => {
+    try {
+      if (!userId) {
+        setCartCount(0);
+        return;
+      }
+
+      const res = await fetch(`/api/cart?userId=${encodeURIComponent(userId)}`);
+      if (!res.ok) {
+        setCartCount(0);
+        return;
+      }
+      const data = await res.json().catch(() => null);
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setCartCount(items.length);
+    } catch (e: any) {
+      console.error("fetchCartCount error:", e);
+      setCartCount(0);
+    }
+  };
+
+  const fetchWishlistCount = async (userId?: string | null) => {
+    try {
+      if (!userId) {
+        setWishlistCount(0);
+        return;
+      }
+
+      const res = await fetch(
+        `/api/wishlist?userId=${encodeURIComponent(userId)}`
+      );
+      if (!res.ok) {
+        setWishlistCount(0);
+        return;
+      }
+      const data = await res.json().catch(() => null);
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setWishlistCount(items.length);
+    } catch (e: any) {
+      console.error("fetchWishlistCount error:", e);
+      setWishlistCount(0);
+    }
+  };
+
   return (
     <>
       <MaxWidthContainer className="py-4">
         <div className="flex items-center gap-4 relative">
           {/* Logo */}
-          <div className="shrink-0 relative w-32 h-12">
-            <img
-              src="/logo.jpeg"
-              alt="Brand logo"
-              className="w-32 absolute top-0 left-0 object-contain"
-            />
-          </div>
+          <Link href={"/"}>
+            <div className="shrink-0 relative w-32 h-12">
+              <img
+                src="/logo.jpeg"
+                alt="Brand logo"
+                className="w-32 absolute top-0 left-0 object-contain"
+              />
+            </div>
+          </Link>
 
           {/* Location (hidden on very small screens) */}
           <div className="hidden sm:flex items-center gap-2 text-sm text-gray-700">
@@ -235,12 +330,24 @@ const Navbar: React.FC<Props> = ({}) => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                // always navigate to shop page with search query on submit
                 const q = query.trim();
-                const target = q
-                  ? `/shop?search=${encodeURIComponent(q)}`
-                  : `/shop`;
-                window.location.href = target;
+
+                const params = new URLSearchParams(
+                  searchParams ? Array.from(searchParams.entries()) : []
+                );
+
+                if (q) {
+                  params.set("search", q);
+                } else {
+                  params.delete("search");
+                }
+
+                const target =
+                  params.toString().length > 0
+                    ? `/shop?${params.toString()}`
+                    : `/shop`;
+
+                router.push(target);
               }}
               className="relative"
               role="search"
@@ -257,9 +364,9 @@ const Navbar: React.FC<Props> = ({}) => {
                     value={query}
                     onChange={(e) => {
                       setQuery(e.target.value);
-                      setOpen(e.target.value.trim().length >= 2);
+                      setOpen(e.target.value.trim().length > 0);
                     }}
-                    onFocus={() => setOpen(query.trim().length >= 2)}
+                    onFocus={() => setOpen(query.trim().length > 0)}
                     onKeyDown={onKeyDown}
                     className="w-full px-3 py-2 text-sm bg-transparent outline-none rounded-l-md"
                   />
@@ -319,20 +426,6 @@ const Navbar: React.FC<Props> = ({}) => {
                     className="h-5 w-5 object-contain"
                   />
                 </button>
-                {/* {query && (
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => {
-                    setQuery("");
-                    setOpen(false);
-                    inputRef.current?.focus();
-                  }}
-                  className="px-3 py-2 bg-transparent hover:bg-gray-200 transition"
-                >
-                  ✕
-                </button>
-              )} */}
               </div>
 
               {/* compact search for xs screens */}
@@ -358,154 +451,216 @@ const Navbar: React.FC<Props> = ({}) => {
             </form>
           </div>
 
-          {/* Actions */}
+          {/* Right side: Profile, cart, more menu */}
+          <div className="ml-auto flex items-center gap-3">
+            {/* Desktop profile dropdown */}
+            <div className="hidden md:block relative">
+              {isLoadingUser ? (
+                <div className="w-24 h-9 bg-secondary rounded animate-pulse" />
+              ) : !user ? (
+                <Button size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                  Sign In
+                </Button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen((v) => !v);
+                      setIsMoreMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 rounded-md border bg-white px-3 py-2 text-sm shadow-sm hover:bg-gray-50 transition"
+                    aria-haspopup="menu"
+                    aria-expanded={isProfileOpen}
+                  >
+                    <UserCircle2 className="h-5 w-5 text-muted-foreground" />
+                    <span className="hidden sm:inline-block font-medium">
+                      {displayFirstName || "Profile"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </button>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
-              {/* Right Section - Cart, Wishlist, Auth */}
-              <div className="hidden md:flex items-center gap-4">
-                {/* Auth Section */}
-                {isLoadingUser ? (
-                  <div className="w-20 h-9 bg-secondary rounded animate-pulse" />
-                ) : !user ? (
-                  <Button onClick={() => setIsAuthModalOpen(true)} size="sm">
-                    Sign In
-                  </Button>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <div className="text-sm">
-                      <p className="font-medium">{displayFirstName}</p>
-                      <p className="text-xs text-muted-foreground">Signed in</p>
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-2 w-44 rounded-md border bg-white shadow-lg z-40 text-sm">
+                      <Link
+                        href="/profile"
+                        className="block px-3 py-2 hover:bg-gray-50"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        My Profile
+                      </Link>
+                      <Link
+                        href="/orders"
+                        className="block px-3 py-2 hover:bg-gray-50"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        Orders
+                      </Link>
+                      <Link
+                        href="/wishlist"
+                        className="flex items-center justify-between px-3 py-2 hover:bg-gray-50"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <span>Wishlists</span>
+                        {wishlistCount > 0 && (
+                          <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-primary-foreground">
+                            {wishlistCount}
+                          </span>
+                        )}
+                      </Link>
+                      <Link
+                        href="/rewards"
+                        className="block px-3 py-2 hover:bg-gray-50"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        Rewards
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          handleLogout();
+                        }}
+                        className="flex w-full items-center gap-2 border-t px-3 py-2 text-left text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Sign out</span>
+                      </button>
                     </div>
-                    <Button
-                      onClick={handleLogout}
-                      variant="ghost"
-                      size="sm"
-                      className="cursor-pointer"
-                    >
-                      <LogOut size={16} />
-                      <span className="sr-only">Sign out</span>
-                    </Button>
-                  </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Cart with label (desktop + mobile) */}
+            <Link
+              href="/cart"
+              className="relative flex items-center gap-2 rounded-md px-3 py-2 hover:bg-gray-100 transition"
+            >
+              <div className="relative">
+                <ShoppingCartIcon className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-[5px] -right-[7px] h-2 w-2 rounded-full bg-primary" />
                 )}
               </div>
+              <span className="hidden xs:inline-block text-sm font-medium">
+                Cart
+              </span>
+            </Link>
 
-              {/* Mobile Menu Button */}
+            {/* Three dots more menu */}
+            <div className="relative">
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
+                type="button"
+                onClick={() => {
+                  setIsMoreMenuOpen((v) => !v);
+                  setIsProfileOpen(false);
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-gray-100 transition"
+                aria-haspopup="menu"
+                aria-expanded={isMoreMenuOpen}
               >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                <MoreVertical className="h-5 w-5 text-muted-foreground" />
+              </button>
+              {isMoreMenuOpen && (
+                <div className="absolute right-0 mt-2 w-40 rounded-md border bg-white shadow-lg z-40 text-sm">
+                  <Link
+                    href="/contact-us"
+                    className="block px-3 py-2 hover:bg-gray-50"
+                    onClick={() => setIsMoreMenuOpen(false)}
+                  >
+                    Contact-us
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile auth / profile trigger */}
+            <div className="md:hidden">
+              {isLoadingUser ? (
+                <div className="w-8 h-8 bg-secondary rounded-full animate-pulse" />
+              ) : !user ? (
+                <button
+                  type="button"
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="rounded-full border bg-white px-3 py-1 text-xs font-medium shadow-sm"
+                >
+                  Sign In
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen((v) => !v)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100"
+                  aria-label="Open account menu"
+                >
+                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile expanded menu (profile + wishlist + cart) */}
+        {isMobileMenuOpen && user && (
+          <div className="mt-3 space-y-2 rounded-md border bg-white p-3 text-sm shadow-sm md:hidden">
+            <div className="flex items-center justify-between border-b pb-2 mb-2">
+              <div>
+                <p className="font-medium">{displayFirstName}</p>
+                <p className="text-xs text-muted-foreground">Signed in</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-1 text-xs text-red-600 hover:text-red-700"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign out</span>
               </button>
             </div>
 
-            {/* Mobile Menu */}
-            {isMobileMenuOpen && (
-              <div className="md:hidden border-t py-4 space-y-4">
-                <Link
-                  href="/"
-                  className="block text-sm font-medium hover:text-primary transition-colors py-2"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/products"
-                  className="block text-sm font-medium hover:text-primary transition-colors py-2"
-                >
-                  Products
-                </Link>
-                <Link
-                  href="/about"
-                  className="block text-sm font-medium hover:text-primary transition-colors py-2"
-                >
-                  About
-                </Link>
-
-                <div className="border-t pt-4 space-y-3">
-                  <Link
-                    href="/wishlist"
-                    className="flex items-center justify-between py-2"
-                  >
-                    <span className="text-sm font-medium">Wishlist</span>
-                    {wishlistCount > 0 && (
-                      <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
-                        {wishlistCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  <Link
-                    href="/cart"
-                    className="flex items-center justify-between py-2"
-                  >
-                    <span className="text-sm font-medium">Cart</span>
-                    {cartCount > 0 && (
-                      <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
-                        {cartCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  {isLoadingUser ? (
-                    <div className="w-full h-9 bg-secondary rounded animate-pulse" />
-                  ) : !user ? (
-                    <Button
-                      onClick={() => {
-                        setIsAuthModalOpen(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full"
-                    >
-                      Sign In
-                    </Button>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="text-sm p-2 bg-secondary rounded">
-                        <p className="font-medium">{displayFirstName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Signed in
-                        </p>
-                      </div>
-                      <Button
-                        onClick={handleLogout}
-                        variant="outline"
-                        className="w-full bg-transparent"
-                      >
-                        <LogOut size={16} className="mr-2" />
-                        Sign Out
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
             <Link
-              href="/cart"
-              className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 transition rounded-md"
+              href="/profile"
+              className="block rounded px-2 py-1 hover:bg-gray-50"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
-              <ShoppingCartIcon />
-              {cartCount > 0 && (
-                <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
-                  {cartCount}
-                </span>
-              )}
+              My Profile
+            </Link>
+            <Link
+              href="/orders"
+              className="block rounded px-2 py-1 hover:bg-gray-50"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Orders
             </Link>
             <Link
               href="/wishlist"
-              className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 transition rounded-md"
+              className="flex items-center justify-between rounded px-2 py-1 hover:bg-gray-50"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
-              <HeartIcon />
+              <span>Wishlists</span>
               {wishlistCount > 0 && (
-                <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
+                <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-primary-foreground">
                   {wishlistCount}
                 </span>
               )}
             </Link>
+            <Link
+              href="/rewards"
+              className="block rounded px-2 py-1 hover:bg-gray-50"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Rewards
+            </Link>
+            <Link
+              href="/contact-us"
+              className="block rounded px-2 py-1 hover:bg-gray-50"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Contact-us
+            </Link>
           </div>
-        </div>
+        )}
 
         {/* separator line */}
       </MaxWidthContainer>

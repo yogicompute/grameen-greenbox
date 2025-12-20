@@ -11,6 +11,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { Product } from '@/lib/mock-products'
+import { toast } from 'sonner'
 
 interface ProductReviewsProps {
   product: Product
@@ -202,7 +203,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
               </div>
 
               <button
-                onClick={() => window.alert('Open review form — integrate form in app flow')}
+                onClick={() => toast.warning('Open review form — integrate form in app flow')}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full shadow-sm hover:scale-105 transition-transform"
                 aria-label="Add your first review"
               >

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import  ALL_PRODUCTS from "@/lib/products.json";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request) {
   try {
@@ -8,38 +8,48 @@ export async function GET(request) {
     const search = searchParams.get("search");
     const sortBy = searchParams.get("sortBy") || "name";
 
-    let filteredProducts = [...ALL_PRODUCTS];
+    // Build Supabase query according to `product` table schema
+    // select explicit fields to avoid unexpected columns
+    let query = supabase
+      .from("product")
+      .select(
+        `id, name, category, price, images, ratings, review_count, product_description, created_at, updated_at`
+      );
 
-    // Filter by category
     if (category) {
-      filteredProducts = filteredProducts.filter(
-        (p) => p.category.toLowerCase() === category.toLowerCase()
-      );
+      // match category case-insensitive (partial match)
+      query = query.ilike("category", `%${category}%`);
     }
 
-    // Filter by search term (searches name)
     if (search) {
-      const searchLower = search.toLowerCase();
-      filteredProducts = filteredProducts.filter((p) =>
-        p.name.toLowerCase().includes(searchLower)
-      );
+      // partial match on name (case-insensitive)
+      query = query.ilike("name", `%${search}%`);
     }
 
-    // Sort products
+    // Apply sorting: use 'ratings' column per schema
     if (sortBy === "price-asc") {
-      filteredProducts.sort((a, b) => a.price - b.price);
+      query = query.order("price", { ascending: true });
     } else if (sortBy === "price-desc") {
-      filteredProducts.sort((a, b) => b.price - a.price);
+      query = query.order("price", { ascending: false });
     } else if (sortBy === "rating") {
-      filteredProducts.sort((a, b) => b.rating - a.rating);
+      query = query.order("ratings", { ascending: false });
     } else {
-      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+      query = query.order("name", { ascending: true });
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("Supabase products query error:", error);
+      return NextResponse.json(
+        { success: false, error: error.message || "Failed to fetch products" },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      count: filteredProducts.length,
-      products: filteredProducts,
+      count: Array.isArray(data) ? data.length : 0,
+      products: data ?? [],
     });
   } catch (error) {
     console.error("Error fetching products:", error);

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type Address = {
   id?: number;
@@ -134,7 +135,7 @@ export default function AddressModal({
       if (!user) {
           // ask parent to open auth modal (and close this modal). Parent should reopen this modal after auth.
           setSaving(false);
-          alert("Please sign in to save your address");
+          toast.warning("Please sign in to save your address");
           onRequireAuth?.(form);
           return;
       }

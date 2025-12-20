@@ -1,133 +1,58 @@
 [
   {
-    "id": 1,
-    "name": "Organic Apples",
-    "category": "fruits",
-    "price": 4.99,
-    "image": "/local-farm-fresh-apples.jpg",
-    "rating": 4.8
+    "id": 19,
+    "name": "Byuli Dal",
+    "category": "Pulses",
+    "price": 120.0,
+    "image": "https://raw.githubusercontent.com/yogicompute/grameen-greenbox/main/public/byuli-dal/byuli-dal-1.png",
+    "rating": 0
   },
   {
-    "id": 2,
-    "name": "Bananas",
-    "category": "fruits",
-    "price": 2.99,
-    "image": "/fresh-bananas.jpg",
-    "rating": 4.6
+    "id": 20,
+    "name": "Deshi Ghee",
+    "category": "Natural Goodness",
+    "price": 550.0,
+    "image": "https://raw.githubusercontent.com/yogicompute/grameen-greenbox/main/public/desi-ghee/desi-ghee-1.JPG",
+    "rating": 0
   },
   {
-    "id": 3,
-    "name": "Strawberries",
-    "category": "fruits",
-    "price": 5.99,
-    "image": "/organic-strawberries.jpg",
-    "rating": 4.9
+    "id": 24,
+    "name": "Masoor Dal",
+    "category": "Pulses",
+    "price": 100.0,
+    "image": "https://raw.githubusercontent.com/yogicompute/grameen-greenbox/main/public/mosoor-dal/mosoor-dal-1.png",
+    "rating": 0
   },
   {
-    "id": 4,
-    "name": "Blueberries",
-    "category": "fruits",
-    "price": 6.99,
-    "image": "/fresh-blueberries.jpg",
-    "rating": 4.7
+    "id": 21,
+    "name": "Matar Dal",
+    "category": "Pulses",
+    "price": 110.0,
+    "image": "https://raw.githubusercontent.com/yogicompute/grameen-greenbox/main/public/matar-dal/matar-dal-1.png",
+    "rating": 0
   },
   {
-    "id": 5,
-    "name": "Oranges",
-    "category": "fruits",
-    "price": 3.99,
-    "image": "/organic-oranges.jpg",
-    "rating": 4.5
-  },
-
-  {
-    "id": 6,
-    "name": "Organic Carrots",
-    "category": "vegetables",
-    "price": 2.49,
-    "image": "/sweet-organic-carrots.jpg",
-    "rating": 4.7
+    "id": 22,
+    "name": "Moong Dal",
+    "category": "Pulses",
+    "price": 130.0,
+    "image": "https://raw.githubusercontent.com/yogicompute/grameen-greenbox/main/public/moong-dal/moong-dal-1.png",
+    "rating": 0
   },
   {
-    "id": 7,
-    "name": "Spinach Mix",
-    "category": "vegetables",
-    "price": 3.49,
-    "image": "/fresh-spinach-kale-mix.jpg",
-    "rating": 4.8
+    "id": 23,
+    "name": "Moringa Honey",
+    "category": "Natural Goodness",
+    "price": 320.0,
+    "image": "https://raw.githubusercontent.com/yogicompute/grameen-greenbox/main/public/moringa-honey/moringa-honey-1.JPG",
+    "rating": 0
   },
   {
-    "id": 8,
-    "name": "Tomatoes",
-    "category": "vegetables",
-    "price": 3.99,
-    "image": "/organic-heirloom-tomatoes.jpg",
-    "rating": 4.6
-  },
-  {
-    "id": 9,
-    "name": "Broccoli",
-    "category": "vegetables",
-    "price": 2.99,
-    "image": "/fresh-broccoli.jpg",
-    "rating": 4.5
-  },
-  {
-    "id": 10,
-    "name": "Bell Peppers",
-    "category": "vegetables",
-    "price": 3.49,
-    "image": "/organic-bell-peppers.jpg",
-    "rating": 4.7
-  },
-
-  {
-    "id": 11,
-    "name": "Organic Milk",
-    "category": "dairy",
-    "price": 4.99,
-    "image": "/organic-milk.jpg",
-    "rating": 4.6
-  },
-  {
-    "id": 12,
-    "name": "Greek Yogurt",
-    "category": "dairy",
-    "price": 5.49,
-    "image": "/greek-yogurt.jpg",
-    "rating": 4.8
-  },
-  {
-    "id": 13,
-    "name": "Cheddar Cheese",
-    "category": "dairy",
-    "price": 7.99,
-    "image": "/cheddar-cheese.jpg",
-    "rating": 4.7
-  },
-
-  {
-    "id": 14,
-    "name": "Brown Rice",
-    "category": "grains",
-    "price": 3.99,
-    "image": "/organic-brown-rice.jpg",
-    "rating": 4.5
-  },
-  {
-    "id": 15,
-    "name": "Whole Wheat Bread",
-    "category": "grains",
-    "price": 4.49,
-    "image": "/whole-wheat-bread.jpg",
-    "rating": 4.6
-  },
-  {
-    "id": 16,
-    "name": "Oats",
-    "category": "grains",
-    "price": 5.99,
-    "image": "/organic-oats.jpg",
-    "rating": 4.8
+    "id": 25,
+    "name": "Badshahbhog Rice",
+    "category": "Grains",
+    "price": 90.0,
+    "image": "https://raw.githubusercontent.com/yogicompute/grameen-greenbox/main/public/baadshahbhog-rice/baadshahbhog-rice-1.png",
+    "rating": 0
   }
 ]

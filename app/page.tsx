@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   HeroSection,
   Categories,
@@ -6,6 +7,10 @@ import {
   WhyChooseUs,
   Testimonials,
 } from "@/components/hero";
+
+export const metadata: Metadata = {
+  title: "Home | Grameen GreenBox",
+};
 
 export default function page() {
 

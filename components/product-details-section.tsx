@@ -1,17 +1,121 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Heart, ShoppingCart, Truck, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Product } from '@/lib/mock-products'
+import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 interface ProductDetailsSectionProps {
-  product: Product
+  // product is the normalized shape produced in `app/shop/[productId]/page.tsx`
+  product: any
 }
 
 export default function ProductDetailsSection({ product }: ProductDetailsSectionProps) {
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [wishlistLoading, setWishlistLoading] = useState(false)
+
+  // Load initial wishlist status for this product
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadWishlistStatus() {
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          // Not logged in or error fetching user -> leave as not wishlisted
+          return
+        }
+
+        const res = await fetch(`/api/wishlist?userId=${encodeURIComponent(user.id)}`)
+        if (!res.ok) return
+
+        const data = await res.json().catch(() => null)
+        if (!data || !Array.isArray(data.items)) return
+
+        const exists = data.items.some((item: any) => item.product_id === product.id)
+        if (isMounted) {
+          setIsWishlisted(exists)
+        }
+      } catch (err) {
+        console.error('[wishlist] Failed to load wishlist status:', err)
+      }
+    }
+
+    loadWishlistStatus()
+    return () => {
+      isMounted = false
+    }
+  }, [product.id])
+
+  const handleToggleWishlist = useCallback(async () => {
+    if (wishlistLoading) return
+    setWishlistLoading(true)
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+
+      if (userError) {
+        console.error('[wishlist] Failed to get user:', userError)
+        return
+      }
+
+      if (!user) {
+        console.error('[wishlist] No authenticated user, cannot update wishlist')
+        return
+      }
+
+      if (!isWishlisted) {
+        // Add to wishlist
+        const res = await fetch(`/api/wishlist?userId=${encodeURIComponent(user.id)}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: product.id,
+          }),
+        })
+
+        const data = await res.json().catch(() => null)
+        if (!res.ok || !data?.success) {
+          console.error('[wishlist] Add failed:', data)
+        } else {
+          setIsWishlisted(true)
+        }
+      } else {
+        // Remove from wishlist
+        const res = await fetch(`/api/wishlist?userId=${encodeURIComponent(user.id)}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: product.id,
+          }),
+        })
+
+        const data = await res.json().catch(() => null)
+        if (!res.ok || !data?.success) {
+          console.error('[wishlist] Remove failed:', data)
+        } else {
+          setIsWishlisted(false)
+        }
+      }
+    } catch (err) {
+      console.error('[wishlist] Toggle exception:', err)
+    } finally {
+      setWishlistLoading(false)
+    }
+  }, [isWishlisted, product.id, wishlistLoading])
 
   return (
     // Make this a full-height column so the parent card and the image column stay visually balanced.
@@ -20,14 +124,14 @@ export default function ProductDetailsSection({ product }: ProductDetailsSection
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">{product.title}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{product.title ?? product.name}</h1>
           <div className="flex items-center gap-4">
             <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
                   className={`w-5 h-5 rounded-full ${
-                    i < Math.floor(product.rating)
+                    i < Math.floor(product.ratings ?? 0)
                       ? 'bg-yellow-400'
                       : 'bg-gray-300'
                   }`}
@@ -35,7 +139,7 @@ export default function ProductDetailsSection({ product }: ProductDetailsSection
               ))}
             </div>
             <span className="text-sm text-muted-foreground">
-              {product.reviews} reviews • Rating: {product.rating}
+              {product.review_count ?? 0} reviews • Rating: {product.ratings ?? 0}
             </span>
           </div>
         </div>
@@ -44,7 +148,7 @@ export default function ProductDetailsSection({ product }: ProductDetailsSection
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <span className="text-4xl font-bold text-primary">
-              ₹{product.price.toFixed(2)}
+              ₹{Number(product.price ?? 0).toFixed(2)}
             </span>
             {product.originalPrice && (
               <>
@@ -57,15 +161,15 @@ export default function ProductDetailsSection({ product }: ProductDetailsSection
               </>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">{product.description}</p>
+          <p className="text-sm text-muted-foreground">{product.longDescription ?? product.product_description ?? product.description}</p>
         </div>
 
         {/* Stock and Shipping Info */}
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 bg-secondary rounded-lg">
             <p className="text-xs text-muted-foreground mb-1">Stock Status</p>
-            <p className="font-semibold text-foreground">
-              {product.stockStatus?.count || 0} in stock
+        <p className="font-semibold text-foreground">
+        {product.stockStatus?.count ?? product.review_count ?? 0} in stock
             </p>
           </div>
           <div className="p-3 bg-secondary rounded-lg">
@@ -107,23 +211,63 @@ export default function ProductDetailsSection({ product }: ProductDetailsSection
       <div className="mt-auto space-y-4">
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Button className="flex-1 bg-primary hover:bg-primary/90 gap-2 py-4 text-base">
+          <Button
+            onClick={async () => {
+              try {
+                // Get current user to derive cart.user_id (uuid)
+                const {
+                  data: { user },
+                  error: userError,
+                } = await supabase.auth.getUser()
+
+                if (userError) {
+                  console.error('[cart] Failed to get user:', userError)
+                  return
+                }
+
+                if (!user) {
+                  console.error('[cart] No authenticated user, cannot add to cart')
+                  return
+                }
+
+                const res = await fetch(`/api/cart?userId=${encodeURIComponent(user.id)}`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    productId: product.id,
+                    quantity,
+                  }),
+                })
+
+                const data = await res.json()
+                if (!res.ok || !data.success) {
+                  console.error('[cart] Add failed:', data)
+                  // optionally show a toast here
+                } else {
+                  toast.success("Item added to cart successfully")
+                  console.log('[cart] Add success:', data)
+                }
+              } catch (err) {
+                console.error("[cart] Add exception:", err)
+              }
+            }}
+            className="flex-1 bg-primary hover:bg-primary/90 gap-2 py-4 text-base"
+          >
             <ShoppingCart size={20} />
             Add to Cart
           </Button>
+
           <Button
-            onClick={() => setIsWishlisted(!isWishlisted)}
-            className={`px-6 py-4 border-2 ${
-              isWishlisted
-                ? 'bg-red-50 border-red-500 text-red-500'
-                : 'bg-transparent border-border text-foreground hover:bg-secondary'
-            }`}
             variant="outline"
             aria-pressed={isWishlisted}
+            onClick={handleToggleWishlist}
+            disabled={wishlistLoading}
           >
             <Heart
               size={20}
-              className={isWishlisted ? 'fill-current' : ''}
+              className={isWishlisted ? 'fill-current text-red-500' : ''}
             />
           </Button>
         </div>

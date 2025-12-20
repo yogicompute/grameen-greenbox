@@ -5,32 +5,40 @@ import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
 
 const testimonials = [
   {
-    name: 'Sarah Mitchell',
-    role: 'Food Enthusiast',
-    content: 'The quality of produce is exceptional. Everything arrives fresh and the sustainability packaging is impressive. I\'ve switched completely!',
+    name: 'Anita Sharma',
+    role: 'Working Professional & Home Chef',
+    content:
+      'I order all my dals and rice from Grameen Greenbox now. The grains cook perfectly every time and the aroma reminds me of my village. Delivery is always on time and the packaging is neat and eco-friendly.',
     rating: 5,
-    image: '/smiling-woman-portrait.png',
+    image:
+      'https://images.pexels.com/photos/3760852/pexels-photo-3760852.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
   },
   {
-    name: 'James Chen',
-    role: 'Health Coach',
-    content: 'I recommend GreenCart to all my clients. The organic certification is legitimate, and the taste difference is undeniable.',
+    name: 'Rahul Verma',
+    role: 'Fitness Enthusiast',
+    content:
+      'Switching to their pulses and cold-pressed products has made a visible difference in my meals. The moong dal sprouts beautifully and the quality feels far better than regular supermarket brands.',
     rating: 5,
-    image: '/smiling-man-portrait.png',
+    image:
+      'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
   },
   {
-    name: 'Emma Rodriguez',
-    role: 'Chef',
-    content: 'As a professional chef, I\'m particular about my ingredients. GreenCart sources the best seasonal produce available.',
+    name: 'Chef Meera Iyer',
+    role: 'Catering Business Owner',
+    content:
+      'For my catering orders I can’t compromise on ingredients. Grameen Greenbox gives me consistent quality—whether it’s basmati rice or desi ghee. My clients often ask where I source my staples from.',
     rating: 5,
-    image: '/woman-chef-portrait.png',
+    image:
+      'https://images.pexels.com/photos/3760853/pexels-photo-3760853.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
   },
   {
-    name: 'David Park',
-    role: 'Sustainability Officer',
-    content: 'Their commitment to eco-friendly practices aligns perfectly with my values. Fast delivery and zero waste packaging!',
+    name: 'Arjun Kulkarni',
+    role: 'Sustainability Advocate',
+    content:
+      'I love that they work directly with farmers and still manage quick doorstep delivery. The packaging is minimal, recyclable, and the products actually taste fresh—not stale like most packaged stuff.',
     rating: 5,
-    image: '/professional-man-portrait.png',
+    image:
+      'https://images.pexels.com/photos/936119/pexels-photo-936119.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop',
   },
 ]
 

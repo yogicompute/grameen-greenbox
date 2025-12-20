@@ -1,35 +1,31 @@
 'use client'
-
-import { Leaf, Apple, Carrot, Flower } from 'lucide-react'
+import Link from 'next/link'
+import { Leaf, Bean, Wheat } from 'lucide-react'
 
 const categories = [
   {
-    icon: Apple,
-    name: 'Fresh Fruits',
-    description: 'Seasonal, locally sourced fruits',
+    icon: Bean,
+    name: 'Pulses (Dals)',
+    description: 'Protein-rich lentils for everyday cooking.',
     color: 'text-red-500',
     bgColor: 'bg-red-50',
-  },
-  {
-    icon: Carrot,
-    name: 'Vegetables',
-    description: 'Organic, pesticide-free produce',
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50',
+    href:"/shop?category=Pulses"
   },
   {
     icon: Leaf,
-    name: 'Greens & Herbs',
-    description: 'Fresh salads and culinary herbs',
-    color: 'text-primary',
-    bgColor: 'bg-primary/10',
+    name: 'Natural Goodness',
+    description: 'Pure, wholesome foods promoting better health.',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-50',
+    href:"/shop?category=Natural+Goodness"
   },
   {
-    icon: Flower,
-    name: 'Specialty Items',
-    description: 'Gourmet and exotic varieties',
-    color: 'text-accent',
-    bgColor: 'bg-accent/10',
+    icon: Wheat,
+    name: 'Grains',
+    description: 'Aromatic grains for perfect daily meals.',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    href:"/shop?category=Grains"
   },
 ]
 
@@ -46,11 +42,12 @@ export default function Categories() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6">
           {categories.map((category, index) => {
             const Icon = category.icon
             return (
-              <div
+              <Link
+                href={category.href}
                 key={index}
                 className="group animate-fade-in-up hover:scale-105 transition-all duration-300 cursor-pointer"
                 style={{ animationDelay: `${index * 0.1}s` }}
@@ -73,7 +70,7 @@ export default function Categories() {
                     Explore →
                   </div>
                 </div>
-              </div>
+              </Link>
             )
           })}
         </div>

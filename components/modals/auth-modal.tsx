@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import {supabase} from "@/lib/supabase"
+import { toast } from "sonner"
 
 interface AuthModalProps {
   isOpen: boolean
@@ -105,7 +106,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         setError("")
         // update stored formData to formatted full name for clarity
         setFormData({ displayName: formattedName, email: "", password: "", confirmPassword: "" })
-        alert("Sign up successful! Please check your email for confirmation.")
+        toast.success("Sign up successful! Please check your email for confirmation.")
         setIsSignUp(false)
         // Notify parent that auth flow succeeded so callers can resume (e.g., reopen address modal)
         onSuccess()
