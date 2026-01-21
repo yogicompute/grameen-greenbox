@@ -273,9 +273,10 @@ export default function ProductDetailsSection({ product }: ProductDetailsSection
         </div>
 
         {/* Buy Now */}
-        <Button className="w-full bg-secondary text-foreground hover:bg-secondary/80 py-4 text-base">
+        {/* TODO: make the buy now work */}
+        {/* <Button className="w-full bg-secondary text-foreground hover:bg-secondary/80 py-4 text-base">
           Buy Now
-        </Button>
+        </Button> */}
 
         {/* Info Cards */}
         <div className="pt-7 border-t border-border flex w-full justify-between items-center ">

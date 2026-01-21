@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ShoppingCart, Star } from 'lucide-react'
 import { Button } from './ui/button'
+import { formatCurrency } from '@/lib/utils'
 
 interface ProductRecommendationsProps {
   currentProductId: number
@@ -100,7 +101,7 @@ export default function ProductRecommendations({ currentProductId, currentCatego
                 {/* Price and CTA */}
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-2xl font-bold text-primary">
-                    ${Number(product.price).toFixed(2)}
+                    {formatCurrency(Number(product.price))}
                   </span>
                   <Button
                     size="sm"

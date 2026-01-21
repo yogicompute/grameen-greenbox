@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import {formatCurrency} from "@/lib/utils"
 
 type CartItem = {
   id: number
@@ -241,7 +242,7 @@ export default function CartPage() {
                       <div>
                         <h3 className="font-semibold">{item.product_name ?? `Product #${item.product_id}`}</h3>
                         <p className="text-sm text-muted-foreground">
-                          ${(item.price ?? 0).toFixed(2)}
+                          {formatCurrency(item.price ?? 0)}
                         </p>
                       </div>
 
@@ -282,7 +283,7 @@ export default function CartPage() {
 
                     <div className="text-right">
                       <p className="font-semibold">
-                        ${(((item.price ?? 0) as number) * item.quantity).toFixed(2)}
+                        {formatCurrency((((item.price ?? 0) as number) * item.quantity))}
                       </p>
                     </div>
                   </div>
@@ -301,19 +302,20 @@ export default function CartPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatCurrency(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tax (10%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatCurrency(tax)}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between font-semibold">
                     <span>Total</span>
-                    <span>${finalTotal.toFixed(2)}</span>
+                    <span>{formatCurrency(finalTotal)}</span>
                   </div>
                 </div>
 
-                <Button className="w-full">Proceed to Checkout</Button>
+                {/* TODO: checkout button should work */}
+                {/* <Button className="w-full">Proceed to Checkout</Button> */}
 
                 <Button variant="outline" className="w-full bg-transparent" onClick={clearCart}>
                   Clear Cart

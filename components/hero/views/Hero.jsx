@@ -7,7 +7,7 @@ const CAROUSEL_IMAGES = [
   {
     url: '/carousel/carousel-1.png',
     alt: 'Fresh organic vegetables and fruits',
-    title: 'Premium Organic Produce',
+    title: 'Premium Organic Products',
     subtitle: 'Handpicked from sustainable farms',
     description: 'Discover the freshest organic vegetables and fruits delivered to your door',
   },
@@ -16,7 +16,7 @@ const CAROUSEL_IMAGES = [
     alt: 'Colorful fresh vegetables',
     title: 'Seasonal Selection',
     subtitle: 'Nature\'s best every season',
-    description: 'Enjoy produce at peak freshness with our rotating seasonal collection',
+    description: 'Enjoy products at peak freshness with our rotating seasonal collection',
   },
   {
     url: '/carousel/carousel-3.png',
